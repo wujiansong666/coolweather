@@ -65,18 +65,25 @@ public class ChooseAreaFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(currentLevel==LEVEL_PROVINCE){
-                    selectedProvince=provinceList.get(position);
+                if (currentLevel == LEVEL_PROVINCE) {
+                    selectedProvince = provinceList.get(position);
                     queryCities();
-                }else if(currentLevel==LEVEL_CITY){
-                    selectedCity=cityList.get(position);
+                } else if (currentLevel == LEVEL_CITY) {
+                    selectedCity = cityList.get(position);
                     queryCounties();
-                }else if(currentLevel==LEVEL_COUNTY){
-                    String weatherId=countyList.get(position).getWeatherId();
-                    Intent intent=new Intent(getActivity(),WeatherActivity.class);
-                    intent.putExtra("weather_id",weatherId);
-                    startActivity(intent);
-                    getActivity().finish();
+                } else if (currentLevel == LEVEL_COUNTY) {
+                    String weatherId = countyList.get(position).getWeatherId();
+                    if (getActivity() instanceof MainActivity) {
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("weather_id", weatherId);
+                        startActivity(intent);
+                        getActivity().finish();
+                    } else if (getActivity() instanceof WeatherActivity) {
+                        WeatherActivity activity = (WeatherActivity) getActivity();
+                        activity.drawerLayout.closeDrawers();
+                        activity.swipeRefresh.setRefreshing(true);
+                        activity.requestWeather(weatherId);
+                    }
                 }
             }
         });
@@ -160,7 +167,7 @@ public class ChooseAreaFragment extends Fragment {
      *根据传入的地址和类型从服务器上查询省市县数据
      */
     private void queryFromServer(String address,final String type){
-       /* showProgressDialog();*/
+      /* showProgressDialog();*/
         HttpUtil.sendOkHttpRequest(address, new Callback() {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
@@ -203,15 +210,15 @@ public class ChooseAreaFragment extends Fragment {
             }
         });
     }
-   /* private void showProgressDialog(){
-        if(progressDialog==null){
+   /*private void showProgressDialog(){
+        if(ProgressDialog==null){
             progressDialog=new ProgressDialog(getActivity());
             progressDialog.setMessage("正在加载");
             progressDialog.setCanceledOnTouchOutside(false);
         }
         progressDialog.show();
-    }*/
-  /*  private void closeProgressDialog(){
+    }
+  private void closeProgressDialog(){
         if(progressDialog!=null){
             progressDialog.dismiss();
         }
